@@ -2,10 +2,11 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>VoiceBox FX (software)</title>
 <style>
-body{font-family:system-ui,sans-serif;background:#0d0d0f;color:#eee;margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center}
-#device{width:640px;background:linear-gradient(#2b2b30,#1a1a1e);border-radius:18px;padding:22px 26px;box-shadow:inset 0 1px 0 #444,0 10px 30px #000}
+body{font-family:system-ui,sans-serif;background:#0d0d0f;color:#eee;margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+#device{width:min(640px,100%);box-sizing:border-box;margin:12px;background:linear-gradient(#2b2b30,#1a1a1e);border-radius:18px;padding:22px 26px;box-shadow:inset 0 1px 0 #444,0 10px 30px #000}
 .brand{display:flex;align-items:center;gap:14px;margin-bottom:14px}
 .brand h1{font-size:1rem;letter-spacing:3px;margin:0}
 .leds{display:flex;gap:12px;margin-left:auto}
@@ -39,6 +40,7 @@ input[type=range]{width:100%;accent-color:#ffb224;cursor:ew-resize}
 .sw.on{outline:2px solid #ffb224}
 #hint{text-align:center;color:#777;font-size:.72rem;margin-top:10px}
 #device.dragover{outline:2px dashed #ffb224;outline-offset:6px}
+@media (max-width:560px){.mid{flex-wrap:wrap}.fader{flex:1 1 100%}.knobwrap{flex:1}.knob{width:76px;height:76px;margin:0 auto}.speaker{flex:1 1 100%}.grille{height:64px}.switches{flex-direction:column}.sw{min-height:48px;font-size:1rem}input[type=range]{height:36px}#device{padding:16px}#hint{display:none}} /* ponytail: single breakpoint, no per-device tweaks; split if hardware A/B needs it */
 </style>
 </head>
 <body>
