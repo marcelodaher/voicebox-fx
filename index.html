@@ -38,6 +38,7 @@ input[type=range]{width:100%;accent-color:#ffb224;cursor:ew-resize}
 .sw.grn{background:linear-gradient(#3fae5a,#1f6b34)}
 .sw.on{outline:2px solid #ffb224}
 #hint{text-align:center;color:#777;font-size:.72rem;margin-top:10px}
+#device.dragover{outline:2px dashed #ffb224;outline-offset:6px}
 </style>
 </head>
 <body>
@@ -63,7 +64,7 @@ input[type=range]{width:100%;accent-color:#ffb224;cursor:ew-resize}
     <button class="sw grn" id="play">▶ PLAY / STOP</button>
     <button class="sw" id="demo">DEMO TONE</button>
   </div>
-  <div id="hint">R: record · Space: loop · drag knobs ↕ / wheel · pitch is live while looping</div>
+  <div id="hint">R: record · Space: loop · drag knobs ↕ / wheel · drop an audio file to load it</div>
 </div>
 <script src="engine/voicebox.js"></script>
 <script>
@@ -201,6 +202,21 @@ addEventListener("keydown", e => {
   if (e.repeat) return;
   if (e.key === "r" || e.key === "R") toggleRecord();
   if (e.key === " ") { e.preventDefault(); playing ? stop() : buf ? (start(), say("looping — knobs are live")) : say("record or demo first"); }
+});
+// drop an audio file anywhere to replace the buffer (record/demo); depth counter stops outline flicker
+let dragDepth = 0;
+addEventListener("dragenter", e => { e.preventDefault(); dragDepth++; $("device").classList.add("dragover"); });
+addEventListener("dragleave", e => { e.preventDefault(); if (--dragDepth <= 0) { dragDepth = 0; $("device").classList.remove("dragover"); } });
+addEventListener("dragover", e => e.preventDefault());
+addEventListener("drop", async e => {
+  e.preventDefault(); dragDepth = 0; $("device").classList.remove("dragover");
+  const f = e.dataTransfer.files[0];
+  if (!f) return;
+  try {
+    const c = audio(); c.resume();
+    buf = await c.decodeAudioData(await f.arrayBuffer());
+    stop(); say(f.name + " loaded — Space to loop");
+  } catch { say("could not decode that file"); }
 });
 apply(); leds();
 </script>
