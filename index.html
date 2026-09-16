@@ -102,14 +102,15 @@ function audio() {
   requestAnimationFrame(vuLoop);
   return ctx;
 }
-// ponytail: RMS of time-domain tap drives the grille glow; a real VU is peak+ballistics, upgrade if it looks dead on speech
+// ponytail: sqrt-compressed RMS drives the grille glow; gate at ~1 LSB keeps idle dark, real VU ballistics if speech ever looks wrong
 function vuLoop() {
   requestAnimationFrame(vuLoop);
   if (!analyser) return;
   analyser.getByteTimeDomainData(vuData);
   let s = 0;
   for (let i = 0; i < vuData.length; i += 4) { const v = (vuData[i] - 128) / 128; s += v * v; }
-  const target = Math.min(1, Math.sqrt(s / (vuData.length / 4)) * 6);
+  const rms = Math.sqrt(s / (vuData.length / 4));
+  const target = rms < 0.002 ? 0 : Math.min(1, Math.sqrt(rms * 4));
   vu += (target - vu) * (target > vu ? 0.6 : 0.15);
   $("grille").style.boxShadow = `inset 0 0 12px #000, 0 0 ${Math.round(vu * 26)}px rgba(255,178,36,${(vu * 0.8).toFixed(2)})`;
   $("grille").style.backgroundColor = `rgb(${21 + Math.round(vu * 46)},${21 + Math.round(vu * 30)},${23 + Math.round(vu * 8)})`;

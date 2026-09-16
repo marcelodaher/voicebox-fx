@@ -17,12 +17,15 @@ function params(pitch, reverb, delay) {
   };
 }
 
-// 2s demo signal so UI works with no mic; envelope avoids clicks
+// demo signal so UI works with no mic: quiet 150ms pulses every 500ms,
+// gaps expose the delay echo + reverb tail; envelopes avoid clicks
 function tone(freq, seconds, sampleRate) {
   const n = Math.floor(sampleRate * seconds), out = new Float32Array(n);
   for (let i = 0; i < n; i++) {
-    const e = Math.min(1, i / 2000, (n - i) / 2000);
-    out[i] = e * Math.sin(2 * Math.PI * freq * i / sampleRate);
+    const t = i / sampleRate, ph = t % 0.5;
+    const g = ph < 0.15 ? Math.min(1, ph / 0.01, (0.15 - ph) / 0.01) : 0;
+    const e = Math.min(1, i / 200, (n - i) / 2000);
+    out[i] = 0.3 * e * g * Math.sin(2 * Math.PI * freq * t);
   }
   return out;
 }

@@ -21,4 +21,9 @@ assert.strictEqual(t.length, 4410);
 assert(Math.abs(t[t.length - 1]) < 0.01);
 assert(Math.max(...Array.from(t.slice(2000, 2100), Math.abs)) > 0.01);
 
+const p2 = tone(220, 2, 44100);
+assert(Math.abs(p2[Math.floor(44100 * 0.3)]) < 0.005, "pulse gap is silent");
+assert(Math.max(...Array.from(p2.slice(2000, 4000), Math.abs)) < 0.35, "demo is quiet");
+assert(Math.max(...Array.from(p2.slice(2000, 4000), Math.abs)) > 0.05, "pulse is audible");
+
 console.log("engine ok: mapping, clamps, delay, tone");
