@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>VoiceBox FX (software)</title>
+<style>
+body{font-family:system-ui,sans-serif;background:#0d0d0f;color:#eee;margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center}
+#device{width:640px;background:linear-gradient(#2b2b30,#1a1a1e);border-radius:18px;padding:22px 26px;box-shadow:inset 0 1px 0 #444,0 10px 30px #000}
+.brand{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+.brand h1{font-size:1rem;letter-spacing:3px;margin:0}
+.leds{display:flex;gap:12px;margin-left:auto}
+.ledwrap{text-align:center;font-size:.65rem;color:#999}
+.led{width:14px;height:14px;border-radius:50%;background:#1a1a1a;border:1px solid #000;margin:0 auto 3px}
+.led.red.on{background:#ff3b30;box-shadow:0 0 10px #ff3b30,inset 0 0 4px #ff9c99}
+.led.grn.on{background:#30d158;box-shadow:0 0 10px #30d158,inset 0 0 4px #a9f5bc}
+.led.red.blink{animation:blk 1s steps(2) infinite}
+@keyframes blk{50%{box-shadow:none}}
+#screen{font-family:ui-monospace,Menlo,monospace;background:#0a140a;color:#7dff8a;border-radius:6px;padding:8px 14px;box-shadow:inset 0 0 12px #000;min-height:1.4em;margin-bottom:18px;font-size:.9rem}
+.mid{display:flex;gap:22px;align-items:flex-start;margin-bottom:18px}
+.fader{flex:1;background:#101013;border-radius:8px;padding:12px 14px;box-shadow:inset 0 0 8px #000}
+.fader label{font-size:.75rem;color:#999;letter-spacing:2px}
+.fader .val{font-size:.75rem;color:#ddd;font-family:ui-monospace,monospace;margin-top:4px}
+input[type=range]{width:100%;accent-color:#ffb224;cursor:ew-resize}
+.knobwrap{text-align:center;user-select:none}
+.knob{width:68px;height:68px;border-radius:50%;cursor:ns-resize;touch-action:none;background:radial-gradient(circle at 40% 35%,rgba(255,255,255,.22),rgba(255,255,255,.10));border:2px solid rgba(255,255,255,.35);box-shadow:inset 0 0 16px rgba(255,255,255,.12),0 3px 6px #000;position:relative}
+.knob .ind{position:absolute;inset:0}
+.knob .ind::before{content:"";position:absolute;left:calc(50% - 2px);top:5px;width:4px;height:14px;background:#eee;border-radius:2px}
+.knob .dot{position:absolute;left:calc(50% - 8px);top:calc(50% - 8px);width:16px;height:16px;border-radius:50%;background:#1a1a1a;border:1px solid #000}
+.knobwrap .lab{font-size:.75rem;color:#999;margin-top:6px;letter-spacing:2px}
+.knobwrap .val{font-size:.75rem;color:#ddd;font-family:ui-monospace,monospace}
+.speaker{flex:1;background:#101013;border-radius:8px;padding:12px;box-shadow:inset 0 0 8px #000;text-align:center}
+.grille{height:90px;border-radius:6px;background:radial-gradient(circle,#333 2px,transparent 2.5px);background-size:10px 10px;background-color:#151517;box-shadow:inset 0 0 12px #000;transition:box-shadow .09s linear,background-color .09s linear}
+.speaker .lab{font-size:.65rem;color:#666;letter-spacing:2px;margin-top:6px}
+.switches{display:flex;gap:14px}
+.sw{flex:1;border:1px solid #000;border-radius:8px;cursor:pointer;color:#fff;font-size:.8rem;letter-spacing:1px;padding:.8rem 0;background:linear-gradient(#3a3a40,#26262b);box-shadow:0 4px 0 #0a0a0c,0 6px 8px #000,inset 0 1px 1px #666}
+.sw:active{transform:translateY(3px);box-shadow:0 1px 0 #0a0a0c,inset 0 1px 1px #666}
+.sw.red{background:linear-gradient(#d9534f,#8f2424)}
+.sw.grn{background:linear-gradient(#3fae5a,#1f6b34)}
+.sw.on{outline:2px solid #ffb224}
+#hint{text-align:center;color:#777;font-size:.72rem;margin-top:10px}
+</style>
+</head>
+<body>
+<div id="device">
+  <div class="brand"><h1>VOICEBOX FX</h1>
+    <div class="leds">
+      <div class="ledwrap"><div class="led red" id="recLed"></div>REC</div>
+      <div class="ledwrap"><div class="led grn" id="playLed"></div>PLAY</div>
+    </div>
+  </div>
+  <div id="screen">R: record, Space: loop</div>
+  <div class="mid">
+    <div class="fader"><label>PITCH</label>
+      <input id="pitch" type="range" min="0.25" max="2" step="0.01" value="1">
+      <div class="val" id="pitchVal">1.00×</div>
+    </div>
+    <div class="knobwrap"><div class="knob" id="kRev"><div class="ind"></div><div class="dot"></div></div><div class="lab">REVERB</div><div class="val" id="kRevVal">0%</div></div>
+    <div class="knobwrap"><div class="knob" id="kDel"><div class="ind"></div><div class="dot"></div></div><div class="lab">DELAY</div><div class="val" id="kDelVal">0%</div></div>
+    <div class="speaker"><div class="grille" id="grille"></div><div class="lab">MONITOR</div></div>
+  </div>
+  <div class="switches">
+    <button class="sw red" id="rec">● REC</button>
+    <button class="sw grn" id="play">▶ PLAY / STOP</button>
+    <button class="sw" id="demo">DEMO TONE</button>
+  </div>
+  <div id="hint">R: record · Space: loop · drag knobs ↕ / wheel · pitch is live while looping</div>
+</div>
+<script src="engine/voicebox.js"></script>
+<script>
+let ctx, buf, src, playing, recording, recorder, chunks;
+let dry, dWet, fb, rWet, analyser, vuData, vu = 0;
+let rev = 0, del = 0; // knob state 0..1
+const $ = id => document.getElementById(id);
+const say = t => $("screen").textContent = t;
+const leds = () => {
+  $("recLed").className = "led red" + (recording ? " on blink" : "");
+  $("playLed").className = "led grn" + (playing ? " on" : "");
+  $("rec").classList.toggle("on", !!recording);
+  $("play").classList.toggle("on", !!playing);
+};
+
+// lazy ctx: autoplay policy blocks creation before gesture
+function audio() {
+  if (ctx) return ctx;
+  ctx = new (window.AudioContext || window.webkitAudioContext)();
+  const master = ctx.createGain();
+  analyser = ctx.createAnalyser(); analyser.fftSize = 512;
+  vuData = new Uint8Array(analyser.fftSize);
+  master.connect(analyser); analyser.connect(ctx.destination);
+  const out = master;
+  dry = ctx.createGain(); dry.connect(out);
+  const dl = ctx.createDelay(2); dl.delayTime.value = DELAY_TIME;
+  dWet = ctx.createGain(); fb = ctx.createGain();
+  dl.connect(dWet); dWet.connect(out);
+  dWet.connect(fb); fb.connect(dl); // ponytail: single shared delay line, no stereo/ping-pong; add 2nd line if hardware A/B needs it
+  const cv = ctx.createConvolver();
+  const n = ctx.sampleRate * 1.5, ir = ctx.createBuffer(1, n, ctx.sampleRate), d = ir.getChannelData(0);
+  for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 3);
+  cv.buffer = ir;
+  rWet = ctx.createGain(); cv.connect(rWet); rWet.connect(out);
+  audio._dl = dl; audio._cv = cv;
+  requestAnimationFrame(vuLoop);
+  return ctx;
+}
+// ponytail: RMS of time-domain tap drives the grille glow; a real VU is peak+ballistics, upgrade if it looks dead on speech
+function vuLoop() {
+  requestAnimationFrame(vuLoop);
+  if (!analyser) return;
+  analyser.getByteTimeDomainData(vuData);
+  let s = 0;
+  for (let i = 0; i < vuData.length; i += 4) { const v = (vuData[i] - 128) / 128; s += v * v; }
+  const target = Math.min(1, Math.sqrt(s / (vuData.length / 4)) * 6);
+  vu += (target - vu) * (target > vu ? 0.6 : 0.15);
+  $("grille").style.boxShadow = `inset 0 0 12px #000, 0 0 ${Math.round(vu * 26)}px rgba(255,178,36,${(vu * 0.8).toFixed(2)})`;
+  $("grille").style.backgroundColor = `rgb(${21 + Math.round(vu * 46)},${21 + Math.round(vu * 30)},${23 + Math.round(vu * 8)})`;
+}
+function apply() {
+  $("pitchVal").textContent = (+$("pitch").value).toFixed(2) + "×";
+  $("kRevVal").textContent = Math.round(rev * 100) + "%";
+  $("kDelVal").textContent = Math.round(del * 100) + "%";
+  if (!ctx) return;
+  const p = params(+$("pitch").value, rev, del);
+  if (src) src.playbackRate.value = p.rate;
+  dry.gain.value = p.dry; dWet.gain.value = p.delayMix;
+  fb.gain.value = p.delayFeedback; rWet.gain.value = p.reverbMix;
+}
+$("pitch").addEventListener("input", apply);
+
+// bounded knob a la chord_generator: drag ↕ / wheel, tick rotates, viridis dot glows
+const VIR = [[68,1,84],[72,40,120],[62,74,137],[49,104,142],[38,130,142],[31,158,137],[53,183,121],[109,205,89],[180,222,44],[253,231,37]];
+function viridis(t) {
+  const x = Math.max(0, Math.min(1, t)) * (VIR.length - 1), i = Math.floor(x), f = x - i;
+  const a = VIR[i], b = VIR[Math.min(i + 1, VIR.length - 1)];
+  return a.map((v, j) => Math.round(v + (b[j] - v) * f));
+}
+function paintKnob(id, v) {
+  const el = $(id);
+  el.querySelector(".ind").style.transform = `rotate(${-135 + v * 270}deg)`;
+  const c = viridis(v), dot = el.querySelector(".dot");
+  if (v <= 0) { dot.style.background = "#1a1a1a"; dot.style.boxShadow = "none"; return; }
+  dot.style.background = `rgb(${c})`;
+  dot.style.boxShadow = `0 0 ${10 + 20 * v}px rgba(${c},.55), inset 0 0 4px rgba(${c},.8)`;
+}
+function knob(id, get, set) {
+  const el = $(id);
+  let lastY = null, acc = 0;
+  const turn = d => set(Math.max(0, Math.min(1, get() + d * 0.05)));
+  el.addEventListener("pointerdown", e => { lastY = e.clientY; acc = 0; el.setPointerCapture(e.pointerId); });
+  el.addEventListener("pointermove", e => {
+    if (lastY === null) return;
+    acc += lastY - e.clientY; lastY = e.clientY;
+    while (acc >= 8) { turn(1); acc -= 8; }
+    while (acc <= -8) { turn(-1); acc += 8; }
+  });
+  el.addEventListener("pointerup", () => lastY = null);
+  el.addEventListener("wheel", e => { e.preventDefault(); turn(e.deltaY < 0 ? 1 : -1); }, { passive: false });
+}
+knob("kRev", () => rev, v => { rev = v; paintKnob("kRev", v); apply(); });
+knob("kDel", () => del, v => { del = v; paintKnob("kDel", v); apply(); });
+paintKnob("kRev", 0); paintKnob("kDel", 0);
+
+async function toggleRecord() {
+  const c = audio(); c.resume();
+  if (recording) { recorder.stop(); return; }
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    chunks = []; recorder = new MediaRecorder(stream);
+    recorder.ondataavailable = e => chunks.push(e.data);
+    recorder.onstop = async () => {
+      recording = false; stream.getTracks().forEach(t => t.stop());
+      buf = await c.decodeAudioData(await new Blob(chunks).arrayBuffer());
+      stop(); say("recorded " + buf.duration.toFixed(1) + "s — Space to loop"); leds();
+    };
+    recording = true; recorder.start(); say("recording… (R to stop)"); leds();
+    setTimeout(() => recording && recorder.stop(), MAX_SECONDS * 1000);
+  } catch (e) { say("mic blocked: " + e.message); }
+}
+function start() {
+  const c = audio(); c.resume();
+  if (!buf) return;
+  stop(true);
+  src = c.createBufferSource(); src.buffer = buf; src.loop = true;
+  src.connect(dry); src.connect(audio._dl); src.connect(audio._cv);
+  apply(); src.start(); playing = true; leds();
+}
+function stop(silent) {
+  playing = false;
+  if (src) { try { src.stop(); } catch {} src.disconnect(); src = null; }
+  if (!silent) say("stopped");
+  leds();
+}
+$("rec").onclick = toggleRecord;
+$("play").onclick = () => playing ? stop() : buf ? (start(), say("looping — knobs are live")) : say("record or demo first");
+$("demo").onclick = () => {
+  const c = audio(); c.resume();
+  const t = tone(220, 2, c.sampleRate), b = c.createBuffer(1, t.length, c.sampleRate);
+  b.getChannelData(0).set(t); buf = b; stop(); say("demo tone loaded — Space to loop");
+};
+addEventListener("keydown", e => {
+  if (e.repeat) return;
+  if (e.key === "r" || e.key === "R") toggleRecord();
+  if (e.key === " ") { e.preventDefault(); playing ? stop() : buf ? (start(), say("looping — knobs are live")) : say("record or demo first"); }
+});
+apply(); leds();
+</script>
+</body>
+</html>
